@@ -2,7 +2,9 @@
   <nav>
     <div class="logo">LOOKMATCH</div>
     <div class="nav-buttons">
-      <button>Text Button 1</button>
+      <router-link :to="{ name: 'Wardrobe' }">
+        <button>Wardrobe</button>
+      </router-link>
       <button>Text Button 2</button>
     </div>
     <div class="nav-buttons">

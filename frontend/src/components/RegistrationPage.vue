@@ -30,6 +30,7 @@
 <script>
 import {computed, ref} from 'vue';
 import axios from 'axios';
+import router from "../../route/route";
 
 export default {
   name: 'RegistrationPage',
@@ -49,12 +50,10 @@ export default {
     const submitForm = async () => {
       if (formInvalid.value) return;
 
-      try {
-        const response = await axios.post('http://localhost:8000/api/users/register/', userData.value);
-        console.log(response.data);
-      } catch (error) {
-        console.error(error);
-      }
+      axios.post('http://localhost:8000/api/users/', userData.value)
+          .then(() => {
+            router.push({name: 'Wardrobe'})
+          })
     };
 
 
