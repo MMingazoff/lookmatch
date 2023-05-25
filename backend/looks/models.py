@@ -1,14 +1,21 @@
+from django.contrib.postgres.fields import IntegerRangeField
 from django.db import models
 from lookmatch.settings import AUTH_USER_MODEL
-from looks.enums import Mood
 from wardrobe.enums import Category
 from wardrobe.models import ClothingItem
 
 
+class Mood(models.Model):
+    mood = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.mood
+
+
 class Look(models.Model):
     user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
-    weather_range = models.ValueRange()
-    mood = models.CharField(choices=Mood.choices, max_length=20)
+    weather_range = IntegerRangeField()
+    mood = models.ForeignKey(Mood, on_delete=models.SET_NULL, null=True)
     clothing_items = models.ManyToManyField(ClothingItem)
     date_created = models.DateTimeField(auto_now_add=True)
     public = models.BooleanField(default=False)

@@ -14,17 +14,18 @@
       <div class="form-group">
         <label for="category">Category:</label>
         <select id="category" v-model="itemData.category">
-          <option v-for="category in categories" :key="category" :value="category">
-            {{ category }}
+          <option v-for="category in categories" :key="category.id" :value="category.id">
+            {{ category.category }}
           </option>
         </select>
       </div>
 
+
       <div class="form-group">
         <label for="color">Color:</label>
         <select id="color" v-model="itemData.color">
-          <option v-for="color in colors" :key="color" :value="color">
-            {{ color }}
+          <option v-for="color in colors" :key="color.id" :value="color.id">
+            {{ color.color }}
           </option>
         </select>
       </div>
@@ -34,24 +35,21 @@
         <input type="text" id="style" v-model="itemData.style"/>
       </div>
 
-      <button type="submit">{{ formType }}</button>
+      <button type="submit" :disabled="!isFormValid">Save</button>
     </form>
   </div>
 </template>
 
 <script>
-import {onMounted, ref} from 'vue';
-import axios from "axios";
+import {computed, onMounted, ref} from 'vue';
+import router from "../../route/route";
+import api from "../../api/api";
 
 export default {
   name: 'ItemManagingPage',
-  props: {
-    id: String,
-    formType: String,
-    defaultData: Object
-  },
+  props: ['id'],
   setup(props) {
-    const itemData = ref(props.defaultData || {
+    const itemData = ref(props.id || {
       image: '',
       name: '',
       category: '',
@@ -59,37 +57,74 @@ export default {
       style: ''
     });
 
-    const categories = ref(['Category 1', 'Category 2', 'Category 3']);
-    const colors = ref(['Color 1', 'Color 2', 'Color 3']);
+    const categories = ref([]);
+    const colors = ref([]);
 
     const uploadImage = (event) => {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        itemData.value.image = e.target.result;
-      };
-
-      reader.readAsDataURL(file);
+      itemData.value.image = event.target.files[0];
     };
 
     const submitForm = () => {
-      // Handle form submission here...
-      console.log(itemData.value);
+      const formData = new FormData();
+
+      if (itemData.value.image)
+        formData.append('image', itemData.value.image);
+      formData.append('name', itemData.value.name);
+      formData.append('category', itemData.value.category);
+      formData.append('color', itemData.value.color);
+      formData.append('style', itemData.value.style);
+      console.log(formData)
+      if (props.id) {
+        api.patchForm('wardrobe/' + props.id + '/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }).then(() => {
+          router.push({name: 'Wardrobe'})
+        })
+      } else {
+        api.post('wardrobe/', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }).then(() => {
+          router.push({name: 'Wardrobe'})
+        })
+      }
     };
 
     onMounted(() => {
-      axios.get('http://localhost:8000/api/wardrobe/id=' + props.id).then((response) => {
-        itemData.value = response.data
+      api.get('wardrobe/colors').then((response) => {
+        colors.value = response.data
       })
+      api.get('wardrobe/categories').then((response) => {
+        categories.value = response.data
+      })
+      if (props.id) {
+        api.get('wardrobe', {
+          params: {
+            id: props.id,
+          }
+        }).then((response) => {
+          console.log(response)
+          itemData.value = response.data[0]
+          itemData.value.image = ''
+        })
+      }
     })
+
+    const isFormValid = computed(() => {
+      const data = itemData.value;
+      return (props.id || data.image) && data.name && data.category && data.color && data.style;
+    });
 
     return {
       itemData,
       categories,
       colors,
       uploadImage,
-      submitForm
+      submitForm,
+      isFormValid,
     };
   }
 };

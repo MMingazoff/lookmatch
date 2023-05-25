@@ -7,7 +7,7 @@
 
     <div class="grid">
       <div v-for="item in filteredItems" :key="item.id" class="grid-item">
-        <router-link :to="/wardrobe/">
+        <router-link :to="{ name: 'ItemInfo', params: { id: item.id }}">
           <img :src="item.image" class="item-image"/>
         </router-link>
         <h2>{{ item.name }}</h2>
@@ -20,35 +20,13 @@
 
 <script>
 import {computed, onMounted, ref} from 'vue';
-import axios from "axios";
+import router from "../../route/route";
+import api from "../../api/api";
 
 export default {
   name: 'WardrobePage',
-  /*  data: () => ({
-      items: []
-    }),*/
   setup() {
-    const items = ref([/* {
-        id: 1,
-        name: 'Item 1',
-        image: 'https://via.placeholder.com/150'
-      },
-        {
-        id: 2,
-        name: 'Item 2',
-        image: 'https://via.placeholder.com/150'
-      },
-        {
-        id: 3,
-        name: 'Item 3',
-        image: 'https://via.placeholder.com/150'
-      },
-        {
-        id: 4,
-        name: 'Item 4',
-        image: 'https://via.placeholder.com/150'
-      },
-      // ...more items...*/]);
+    const items = ref([]);
     const searchTerm = ref("");
 
     const filteredItems = computed(() => {
@@ -56,22 +34,25 @@ export default {
       return items.value.filter(item => item.name.toLowerCase().includes(searchTerm.value.toLowerCase()));
     });
 
+
     onMounted(() => {
-      axios.get('http://localhost:8000/api/wardrobe').then((response) => {
+      api.get('wardrobe').then((response) => {
         items.value = response.data
       })
     });
 
     const addItem = () => {
-      // Handle item addition here...
+      router.push({name: 'ItemManagingAdd'})
     };
 
-    const editItem = () => {
-      // Handle item edit here...
+    const editItem = (id) => {
+      router.push({name: 'ItemManagingEdit', params: {id: id}})
     };
 
     const deleteItem = (id) => {
-      items.value = items.value.filter(item => item.id !== id);
+      api.delete('wardrobe/' + id + '/').then(() => {
+        items.value = items.value.filter(item => item.id !== id);
+      })
     };
 
     return {
@@ -114,11 +95,16 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  border: 2px solid #000; /* black frame */
+  padding: 10px;
+  background-color: #fff; /* white background */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* optional: box-shadow for a bit of depth */
 }
 
 .item-image {
-  width: 100%;
-  height: auto;
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
 }
 
 .edit-button,

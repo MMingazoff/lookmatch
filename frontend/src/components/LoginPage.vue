@@ -3,7 +3,7 @@
     <form @submit.prevent="submitForm" class="login-form">
       <div class="form-group">
         <label for="email">Email:</label>
-        <input type="email" id="email" v-model="loginData.email" required/>
+        <input type="text" id="email" v-model="loginData.username" required/>
       </div>
 
       <div class="form-group">
@@ -21,35 +21,37 @@
 
 <script>
 import {computed, ref} from 'vue';
-import axios from 'axios'; // Make sure to install this with npm install axios
+import axios from 'axios';
+import route from "../../route/route";
 
 export default {
   name: 'LoginPage',
   setup() {
     const loginData = ref({
-      email: '',
+      username: '',
       password: '',
     });
 
     const errorMessage = ref("");
 
-    const formInvalid = computed(() => !loginData.value.email || !loginData.value.password);
+    const formInvalid = computed(() => !loginData.value.username || !loginData.value.password);
 
     const submitForm = async () => {
       if (formInvalid.value) return;
 
-      try {
-        const response = await axios.post('/api/login', loginData.value); // Replace with your actual API endpoint
-        console.log(response.data);
-      } catch (error) {
-        errorMessage.value = "Email or password is incorrect"; // Customize this as per your needs
-        console.error(error);
-      }
+      axios.post('http://localhost:8000/api/users/login/', loginData.value)
+          .then((response) => {
+            localStorage.setItem('accessToken', response.data.access);
+
+            route.push({name: 'Wardrobe'})
+          })
+          .catch(() => {
+            errorMessage.value = "Invalid login or password"
+          })
     };
 
     const googleLogin = () => {
-      // Handle Google login here...
-      console.log("Login via Google clicked");
+
     };
 
     return {

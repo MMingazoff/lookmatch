@@ -9,8 +9,10 @@
   },
   "dependencies": {
     "core-js": "^3.8.3",
+    "date-fns": "^2.30.0",
     "vue": "^3.2.13",
     "vue-carousel": "^0.18.0",
+    "vue-google-oauth2": "^1.5.10",
     "vue-router": "^4.2.1",
     "vue3-carousel": "^0.3.1"
   },

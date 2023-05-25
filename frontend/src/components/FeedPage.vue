@@ -13,17 +13,16 @@
           <option value="bad">Bad</option>
         </select>
       </div>
+      <!-- The button has been added here -->
+      <div class="add-look-button">
+        <button @click="addLook">Add Look</button>
+      </div>
     </div>
 
     <div class="grid">
       <div v-for="item in filteredItems" :key="item.id" class="grid-item">
-        <Carousel>
-          <Slide v-for="img in item.images" :key="img">
-            <img :src="img"/>
-          </Slide>
-        </Carousel>
-        <h2>{{ item.name }}</h2>
-        <p>{{ item.additionalData }}</p>
+        <img :src="item.images[item.currentImageIndex]" @click="nextImage(item)" class="item-image">
+        <h2>{{ item.mood }}</h2>
       </div>
     </div>
   </div>
@@ -31,13 +30,14 @@
 
 <script>
 import {computed, onMounted, ref} from 'vue';
-import {Carousel, Slide} from 'vue3-carousel';
+import router from "../../route/route";
+import api from "../../api/api";
+// import CarouselPhotos from "@/components/Carousel.vue";
 
 export default {
-  name: 'ShopPage',
+  name: 'FeedPage',
   components: {
-    Carousel,
-    Slide
+    // CarouselPhotos
   },
   setup() {
     const items = ref([]); // should be replaced by API call
@@ -45,61 +45,50 @@ export default {
     const selectedMood = ref("good");
 
     const filteredItems = computed(() => {
-      return items.value.filter(item => {
+      return items.value.filter((item) => {
         const isInTempRange = item.temp >= tempRange.value.min &&
             (item.temp <= tempRange.value.max || !tempRange.value.max);
         const matchesMood = item.mood === selectedMood.value;
-        console.log(tempRange.value.max)
         return isInTempRange && matchesMood;
       });
     });
 
     onMounted(() => {
-      // Replace with API call
-      console.log('sdfsdfsdf')
-      items.value = [
-        {
-          id: 1,
-          name: 'Item 1',
-          images: [
-            'https://via.placeholder.com/150',
-            'https://via.placeholder.com/150',
-            'https://via.placeholder.com/150'
-          ],
-          additionalData: 'Additional data 1',
-          temp: 15,
-          mood: 'good'
-        },
-        {
-          id: 2,
-          name: 'Item 2',
-          images: [
-            'https://via.placeholder.com/150',
-            'https://via.placeholder.com/150',
-            'https://via.placeholder.com/150'
-          ],
-          additionalData: 'Additional data 2',
-          temp: 20,
-          mood: 'bad'
+      api.get('looks').then((response) => {
+        const newData = []
+        for (let i = 0; i < response.data.length; i++) {
+          const newValue = response.data[i]
+          newValue['temp'] = JSON.parse(newValue['weather_range'])['lower']
+          newValue['images'] = newValue['clothing_items'].map((uri) => "http://localhost:8000" + uri)
+          newValue['currentImageIndex'] = 0
+          newData.push(newValue)
         }
-        // more items...
-      ];
-      console.log(items.value)
+        console.log(newData)
+        items.value = newData
+      })
     });
+
+    const addLook = () => {
+      router.push({name: 'CreateLook'})
+    };
+
+    const nextImage = (item) => {
+      item.currentImageIndex = (item.currentImageIndex + 1) % item.images.length;
+    };
 
     return {
       items,
       tempRange,
       selectedMood,
-      filteredItems
+      filteredItems,
+      addLook,
+      nextImage,
     };
   }
 };
 </script>
 
 <style scoped>
-
-
 .filters {
   display: flex;
   justify-content: flex-start;
@@ -121,8 +110,10 @@ export default {
   text-align: center;
 }
 
-.carousel {
+.item-image {
   width: 100%;
-  margin-bottom: 15px;
+  height: 300px;
+  object-fit: cover;
+  cursor: pointer;
 }
 </style>
