@@ -60,7 +60,10 @@
               </option>
             </select>
           </div>
-
+          <div class="form-field">
+            <label for="description">Description:</label>
+            <textarea id="description" v-model="form.description"></textarea>
+          </div>
           <button type="submit" class="submit-btn">Confirm</button>
         </form>
       </div>
@@ -85,6 +88,7 @@ export default {
       minTemp: null,
       maxTemp: null,
       mood: '',
+      description: ''
     });
     const moods = ref([])
 
@@ -108,7 +112,8 @@ export default {
         public: form.value.isPublic,
         clothing_items: itemIds,
         mood: form.value.mood,
-        weather_range: [form.value.minTemp, form.value.maxTemp]
+        weather_range: [form.value.minTemp, form.value.maxTemp],
+        description: form.value.description,
       };
 
       api.post('looks/', payload)

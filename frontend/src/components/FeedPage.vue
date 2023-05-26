@@ -8,12 +8,12 @@
       </div>
       <div>
         <label>Mood:</label>
-        <select v-model="selectedMood">
-          <option value="good">Good</option>
-          <option value="bad">Bad</option>
+        <select id="mood" v-model="selectedMood">
+          <option v-for="mood in moods" :key="mood.id" :value="mood">
+            {{ mood.mood }}
+          </option>
         </select>
       </div>
-      <!-- The button has been added here -->
       <div class="add-look-button">
         <button @click="addLook">Add Look</button>
       </div>
@@ -22,7 +22,7 @@
     <div class="grid">
       <div v-for="item in filteredItems" :key="item.id" class="grid-item">
         <img :src="item.images[item.currentImageIndex]" @click="nextImage(item)" class="item-image">
-        <h2>{{ item.mood }}</h2>
+        <h2>{{ item.description }}</h2>
       </div>
     </div>
   </div>
@@ -32,23 +32,30 @@
 import {computed, onMounted, ref} from 'vue';
 import router from "../../route/route";
 import api from "../../api/api";
-// import CarouselPhotos from "@/components/Carousel.vue";
 
 export default {
   name: 'FeedPage',
   components: {
-    // CarouselPhotos
   },
   setup() {
-    const items = ref([]); // should be replaced by API call
+    const items = ref([]);
     const tempRange = ref({min: null, max: null});
-    const selectedMood = ref("good");
+    const selectedMood = ref();
+    const moods = ref([])
+
+    onMounted(() => {
+      api.get('looks/moods').then((response) => {
+        moods.value = response.data
+        moods.value.push({id: -1, mood: 'any'})
+        selectedMood.value = moods.value[0]
+      })
+    })
 
     const filteredItems = computed(() => {
       return items.value.filter((item) => {
-        const isInTempRange = item.temp >= tempRange.value.min &&
-            (item.temp <= tempRange.value.max || !tempRange.value.max);
-        const matchesMood = item.mood === selectedMood.value;
+        const isInTempRange = item.tempMin >= tempRange.value.min &&
+            (item.tempMax <= tempRange.value.max || !tempRange.value.max);
+        const matchesMood = item.mood === selectedMood.value.mood || selectedMood.value.id === -1
         return isInTempRange && matchesMood;
       });
     });
@@ -58,7 +65,8 @@ export default {
         const newData = []
         for (let i = 0; i < response.data.length; i++) {
           const newValue = response.data[i]
-          newValue['temp'] = JSON.parse(newValue['weather_range'])['lower']
+          newValue['tempMin'] = JSON.parse(newValue['weather_range'])['lower']
+          newValue['tempMax'] = JSON.parse(newValue['weather_range'])['upper']
           newValue['images'] = newValue['clothing_items'].map((uri) => "http://localhost:8000" + uri)
           newValue['currentImageIndex'] = 0
           newData.push(newValue)
@@ -83,6 +91,7 @@ export default {
       filteredItems,
       addLook,
       nextImage,
+      moods,
     };
   }
 };

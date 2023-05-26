@@ -39,11 +39,33 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'django_filters',
     'corsheaders',
+    'drf_yasg',
     'users',
     'wardrobe',
     'looks',
     'style_advice',
+    'social_django',
 ]
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,  # Отключение аутентификации сессии, если требуется
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+}
+
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_GITHUB_KEY = '9e5a880c0eaf5b63e4fc'
+SOCIAL_AUTH_GITHUB_SECRET = '1fd0488ec10f35beddbe373bf0b049d686530621'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

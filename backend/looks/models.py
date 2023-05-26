@@ -17,6 +17,7 @@ class Look(models.Model):
     weather_range = IntegerRangeField()
     mood = models.ForeignKey(Mood, on_delete=models.SET_NULL, null=True)
     clothing_items = models.ManyToManyField(ClothingItem)
+    description = models.CharField(max_length=255)
     date_created = models.DateTimeField(auto_now_add=True)
     public = models.BooleanField(default=False)
 

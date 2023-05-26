@@ -19,6 +19,7 @@
         <router-link :to="{ name: 'Login' }">
           <button>Login</button>
         </router-link>
+        <button @click="logout">Logout</button>
       </template>
       <template v-else>
         <button @click="logout">Logout</button>
@@ -70,17 +71,20 @@ nav {
   color: #fff;
 }
 
-button {
-  padding: 10px 20px;
-  font-size: 1em;
-}
-
 .logo {
   font-size: 1.5em;
+  font-family: 'YourCoolFont', sans-serif;
+  color: #fff;
+  text-decoration: none;
 }
 
 .nav-buttons {
   display: flex;
   gap: 15px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 1em;
 }
 </style>

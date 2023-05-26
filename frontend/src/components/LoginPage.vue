@@ -14,7 +14,7 @@
       <p v-if="errorMessage" style="color: red;">{{ errorMessage }}</p>
 
       <button type="submit" :disabled="formInvalid">Submit</button>
-      <button type="button" @click="googleLogin">Login via Google</button>
+      <button type="button" @click="githubLogin">Login via GitHub</button>
     </form>
   </div>
 </template>
@@ -42,7 +42,7 @@ export default {
       axios.post('http://localhost:8000/api/users/login/', loginData.value)
           .then((response) => {
             localStorage.setItem('accessToken', response.data.access);
-
+            localStorage.setItem('refreshToken', response.data.refresh);
             route.push({name: 'Wardrobe'})
           })
           .catch(() => {
@@ -50,8 +50,9 @@ export default {
           })
     };
 
-    const googleLogin = () => {
-
+    const githubLogin = () => {
+      // window.location.href = "`https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${callbackUrl}&scope=read:user`"
+      window.location.href = 'http://localhost:8000/api/users/github/login?redirect_to=http://localhost:8080/login'
     };
 
     return {
@@ -59,8 +60,16 @@ export default {
       errorMessage,
       formInvalid,
       submitForm,
-      googleLogin
+      githubLogin
     };
+  },
+  created() {
+    let access = this.$route.query.access
+    if (access) {
+      localStorage.setItem('accessToken', access);
+      localStorage.setItem('refreshToken', this.$route.query.refresh);
+      this.$router.push({name: 'Wardrobe'})
+    }
   }
 };
 </script>
